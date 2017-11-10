@@ -14,17 +14,17 @@ var fnMain = (function() {
         //const palette = ['yellow', 'navy'];
         //const palette = ['red', 'green', 'blue'];
         return {
-            numShapes: 80,
-            nSides: 4,
-            shapeRadius: 0.44,
+            //numShapes: 80,
+            nSides: 24,
+            shapeRadius: 0.16,
             shapeHolePercent: 0.9,
-            spinDuration: 1800,
-            spinOffset: 0.6,
-            spinEasing: 'easeInOutCirc',
+            spinDuration: 800,
+            spinOffset: 0,
+            spinEasing: 'linear',
             screenMargin: 0.03, //percent on each edge not included in 'board' rectangle
             colorScale: chroma.scale(palette).mode('lch'), //modes: lch, lab, hsl, rgb
             shapeAlpha: 1,
-            shapeBlendMode: PIXI.BLEND_MODES.MULTIPLY,
+            shapeBlendMode: PIXI.BLEND_MODES.NORMAL,
             palette: palette,
             backgroundColor: 0xFFFFFF,
         };
@@ -42,12 +42,6 @@ var fnMain = (function() {
         var arr = Array.apply(null, Array(n));
         return arr.map(function (x, i) { return i });
     };
-
-    function randomColor(colorScale) {
-        const colorArray = colorScale(Math.random()).rgb();
-        const colorNumber = RGBTo24bit(colorArray);
-        return colorNumber;
-    }
 
     function RGBTo24bit(rgbArray) {
         let result = Math.floor(rgbArray[2])
@@ -75,35 +69,65 @@ var fnMain = (function() {
     }
 
     function makeShapes(config, board, renderer) {
-        function makeShape(i) {
-            const g = new PIXI.Graphics();
-            g.cacheAsBitmap = true;
-            const diameter = config.shapeRadius * 2;
-            g.width = diameter;
-            g.height = diameter;
-            const color = RGBTo24bit(config.colorScale(i / config.numShapes)
-                .luminance(0.25)
-                .brighten(2)
-                //.saturate(0.25)
-            .rgb());
-            drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius, color, config.shapeAlpha);
-            drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius * config.shapeHolePercent, config.backgroundColor, 1);
-            const texture = PIXI.RenderTexture.create(diameter, diameter);
-            renderer.render(g, texture);
-            const sprite = new PIXI.Sprite(texture);
-            sprite.x = Math.round(board.width / 2) + board.left;
-            sprite.y = Math.round(board.height / 2) + board.top;
-            sprite.anchor.set(0.5, 0.5);
-            sprite.blendMode = config.shapeBlendMode;
-            const shape = {
-                sprite: sprite,
-            };
-            return shape;
+        const diameter = config.shapeRadius * 2;
+        const colCount = Math.ceil(board.width / diameter)+1;
+        const rowCount = Math.ceil(board.height / diameter)+1;
+        const shapeCount = colCount * rowCount;
+        const shapes = makeRange(shapeCount).map(() => {return {};});
+        for(let j = 0; j < colCount; j++) { //columns
+            for(let k = 0; k < rowCount; k++) { //rows
+                const i = k + rowCount * j;
+                const shape = shapes[i];
+                const g = new PIXI.Graphics();
+                g.width = diameter;
+                g.height = diameter;
+                const color = RGBTo24bit(config.colorScale(portion(i, shapeCount)).rgb());
+                drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius, color, 1);
+                //drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius, config.backgroundColor, 1);
+                //drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius * config.shapeHolePercent, color, config.shapeAlpha);
+                const texture = PIXI.RenderTexture.create(diameter, diameter);
+                renderer.render(g, texture);
+                const sprite = new PIXI.Sprite(texture);
+                const evenRow = (k % 2 == 0);
+                const rowShift = evenRow ? diameter / 4 : diameter * -0.25;
+                sprite.x = board.left + 0 + portion(j, colCount) * board.width;
+                sprite.y = portion(k, rowCount) * board.height;
+                sprite.anchor.set(0.5, 0.5);
+                sprite.blendMode = config.shapeBlendMode;
+                shape.sprite = sprite;
+            }
         }
-        let shapes = makeRange(config.numShapes).map((x, i) => {
-            return makeShape(i);
-        });
         return shapes;
+
+        // function makeShape(i) {
+        //     const g = new PIXI.Graphics();
+        //     g.cacheAsBitmap = true;
+        //     const diameter = config.shapeRadius * 2;
+        //     g.width = diameter;
+        //     g.height = diameter;
+        //     const color = RGBTo24bit(config.colorScale(i / config.numShapes)
+        //         .luminance(0.25)
+        //         .brighten(2)
+        //         //.saturate(0.25)
+        //     .rgb());
+        //     drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius, color, config.shapeAlpha);
+        //     drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius * config.shapeHolePercent, config.backgroundColor, 1);
+        //     const texture = PIXI.RenderTexture.create(diameter, diameter);
+        //     renderer.render(g, texture);
+        //     const sprite = new PIXI.Sprite(texture);
+        //     sprite.x = Math.round(board.width / 2) + board.left;
+        //     sprite.y = Math.round(board.height / 2) + board.top;
+        //     sprite.anchor.set(0.5, 0.5);
+        //     sprite.blendMode = config.shapeBlendMode;
+        //     const shape = {
+        //         sprite: sprite,
+        //     };
+        //     return shape;
+        // }
+        // let shapes = makeRange(shapeCount).map((x, i) => {
+        //     return makeShape(i);
+        // });
+        // return shapes;
     }
 
     function animateShapes(shapes, board, config) {
@@ -113,7 +137,6 @@ var fnMain = (function() {
         });
         for(let i = 0; i < shapes.length; i++) {
             const shape = shapes[i];
-            //const left = i % 2 == 0 ? -1 : 1;
             timeline.add({
                 targets: shape.sprite,
                 rotation:  Math.PI / config.nSides,
