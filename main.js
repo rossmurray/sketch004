@@ -73,6 +73,7 @@ var fnMain = (function() {
         graphics.lineTo(points[2].x, points[2].y)
         graphics.moveTo(Math.round(centerX),Math.round(centerY));
         graphics.lineTo(points[4].x, points[4].y)
+        graphics.lineStyle(0);
         return points;
     }
 
