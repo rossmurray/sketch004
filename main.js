@@ -8,20 +8,18 @@ var fnMain = (function() {
     }
 
     function getConfig() {
-        //const pstring = '#C7FFEA,#FFE46F,#735C66,navy';
+        const pstring = '#49496A,#D2FB78,#C13BFE,#5821D4,#49CDF6';
+        //const pstring = 'yellow,#22BCBC,yellow';
         //const pstring = 'black,white,black';
-        const pstring = 'yellow,navy,yellow';
         const palette = pstring.split(',');
-        //const palette = ['yellow', 'navy'];
-        //const palette = ['red', 'green', 'blue'];
         return {
             nSides: 6,
-            shapeRadius: 0.1,
-            shapeHolePercent: 0.97,
-            shrinkPercent: 0.79,
-            spinDuration: 1200,
-            spinOffset: 0.7,
-            spinPause: 700,
+            shapeRadius: 0.09,
+            shapeHolePercent: 0.96,
+            shrinkPercent: 0.75,
+            spinDuration: 1500,
+            spinOffset: 2,
+            spinPause: 500,
             spinEasing: 'easeInOutElastic',
             screenMargin: 0, //percent on each edge not included in 'board' rectangle
             colorScale: chroma.scale(palette).mode('lab'), //modes: lch, lab, hsl, rgb
@@ -68,6 +66,13 @@ var fnMain = (function() {
         });
         graphics.drawPolygon(points);
         graphics.endFill();
+        graphics.lineStyle(4, 0x0);
+        graphics.moveTo(centerX,centerY);
+        graphics.lineTo(points[0].x, points[0].y)
+        graphics.moveTo(centerX,centerY);
+        graphics.lineTo(points[2].x, points[2].y)
+        graphics.moveTo(centerX,centerY);
+        graphics.lineTo(points[4].x, points[4].y)
         return points;
     }
 
@@ -92,7 +97,8 @@ var fnMain = (function() {
                 g.height = diameter;
                 const color = RGBTo24bit(config.colorScale(diagDist(j,k)).rgb());
                 const polygonPoints = drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius, config.backgroundColor, 1);
-                drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, config.shapeRadius * config.shapeHolePercent, color, config.shapeAlpha);
+                const smallerRadius = Math.round(config.shapeRadius * config.shapeHolePercent);
+                drawNSideRegular(g, config.nSides, config.shapeRadius, config.shapeRadius, smallerRadius, color, config.shapeAlpha);
                 const texture = PIXI.RenderTexture.create(diameter, diameter);
                 renderer.render(g, texture);
                 const sprite = new PIXI.Sprite(texture);
