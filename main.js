@@ -8,25 +8,27 @@ var fnMain = (function() {
     }
 
     function getConfig() {
-        const pstring = '#72969D,#DCAD68,#834D6F,navy';
+        //const pstring = '#C7FFEA,#FFE46F,#735C66,navy';
+        //const pstring = 'black,white,black';
+        const pstring = 'yellow,navy,yellow';
         const palette = pstring.split(',');
         //const palette = ['yellow', 'navy'];
         //const palette = ['red', 'green', 'blue'];
         return {
             nSides: 6,
-            shapeRadius: 0.11,
-            shapeHolePercent: 0.94,
-            shrinkPercent: 0.75,
+            shapeRadius: 0.1,
+            shapeHolePercent: 0.97,
+            shrinkPercent: 0.79,
             spinDuration: 1200,
-            spinOffset: 0.95,
-            spinPause: 1000,
+            spinOffset: 0.7,
+            spinPause: 700,
             spinEasing: 'easeInOutElastic',
             screenMargin: 0, //percent on each edge not included in 'board' rectangle
-            colorScale: chroma.scale(palette).mode('lch'), //modes: lch, lab, hsl, rgb
+            colorScale: chroma.scale(palette).mode('lab'), //modes: lch, lab, hsl, rgb
             shapeAlpha: 1,
             shapeBlendMode: PIXI.BLEND_MODES.NORMAL,
             palette: palette,
-            backgroundColor: 0xFFFFFF,
+            backgroundColor: 0x0,
         };
     }
 
@@ -138,7 +140,7 @@ var fnMain = (function() {
                     duration: config.spinPause
                 }],
                 easing: config.spinEasing,
-                offset: (1 - portion(i, shapes.length)) * (config.spinDuration * config.spinOffset),
+                offset: offset,
             });
         }
         return timeline;
