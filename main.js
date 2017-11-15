@@ -17,7 +17,7 @@ var fnMain = (function() {
             shapeRadius: 0.09,
             shapeHolePercent: 0.96,
             shrinkPercent: 0.75,
-            spinDuration: 1500,
+            spinDuration: 1200,
             spinOffset: 2,
             spinPause: 500,
             spinEasing: 'easeInOutElastic',
@@ -61,17 +61,17 @@ var fnMain = (function() {
             const amountAround = i / nSides + fixedRotation;
             const vx = radius * Math.cos(Math.PI * 2 * amountAround) + centerX;
             const vy = radius * Math.sin(Math.PI * 2 * amountAround) + centerY;
-            const point = new PIXI.Point((vx) + 0, (vy) + 0);
+            const point = new PIXI.Point(Math.round(vx) + 0, Math.round(vy) + 0);
             return point;
         });
         graphics.drawPolygon(points);
         graphics.endFill();
-        graphics.lineStyle(4, 0x0);
-        graphics.moveTo(centerX,centerY);
+        graphics.lineStyle(5, 0x0);
+        graphics.moveTo(Math.round(centerX),Math.round(centerY));
         graphics.lineTo(points[0].x, points[0].y)
-        graphics.moveTo(centerX,centerY);
+        graphics.moveTo(Math.round(centerX),Math.round(centerY));
         graphics.lineTo(points[2].x, points[2].y)
-        graphics.moveTo(centerX,centerY);
+        graphics.moveTo(Math.round(centerX),Math.round(centerY));
         graphics.lineTo(points[4].x, points[4].y)
         return points;
     }
